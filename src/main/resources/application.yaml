@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: restaurant-service
+
+google:
+  api:
+    key: AIzaSyDhuY4_4HmCfzTPm83I_cu2Rx892ctspCc

@@ -1,0 +1,5 @@
+### GET request with all params set
+GET http://localhost:8080/restaurants?searchQuery=pizza&latitude=51.5074&longitude=-0.1278&radiusMeters=200&minPlaceRating=4&desiredPriceLevels=PRICE_LEVEL_INEXPENSIVE&desiredPriceLevels=PRICE_LEVEL_MODERATE&requireOpenNow=true&rankPreference=RELEVANCE
+
+### GET request with only search query
+GET http://localhost:8080/restaurants?searchQuery=box
