@@ -28,7 +28,6 @@ public class RestaurantDTO {
     private String businessStatus; // OPERATIONAL
     private String priceLevel; // PRICE_LEVEL_MODERATE, PRICE_LEVEL_EXPENSIVE
     private OpeningHourDTO openingHours;
-    private String adrFormatAddress;
 
     private boolean takeout;
     private boolean delivery;

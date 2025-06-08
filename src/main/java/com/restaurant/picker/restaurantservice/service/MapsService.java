@@ -13,7 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import com.google.api.gax.core.NoCredentialsProvider;
 
+import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,36 +25,19 @@ public class MapsService {
 
     private final RestaurantDTOMapper restaurantDTOMapper;
 
-    public List<RestaurantDTO> textSearch(SearchRestaurantRequest searchRestaurantRequest) {
-//        List<PriceLevel> desiredPriceLevels = Arrays.asList(
-//                PriceLevel.valueOf("PRICE_LEVEL_MODERATE"),
-//                PriceLevel.PRICE_LEVEL_EXPENSIVE
-//        ); // AIzaSyDhuY4_4HmCfzTPm83I_cu2Rx892ctspCc
+    public List<RestaurantDTO> searchRestaurants(SearchRestaurantRequest searchRestaurantRequest) {
         log.info("Search restaurant request: {}", searchRestaurantRequest);
         List<PriceLevel> desiredPriceLevels = searchRestaurantRequest.getDesiredPriceLevels() != null ? searchRestaurantRequest.getDesiredPriceLevels().stream()
                 .map(PriceLevel::valueOf)
                 .toList()
                 : Collections.emptyList();
-        // Set up the Field Mask headers
-        Map<String, String> headers = new HashMap<>();
-        String fieldMaskString = "*";
-        headers.put("x-goog-fieldmask", fieldMaskString);
-        headers.put("x-goog-api-key", googleApiConfig.getKey());
-        HeaderProvider headerProvider = FixedHeaderProvider.create(headers);
-        try {
-            // Build the settings object for the client
-            PlacesSettings placesSettings = PlacesSettings.newBuilder()
-                    .setHeaderProvider(headerProvider)
-                    .setCredentialsProvider(NoCredentialsProvider.create())
-                    .build();
-            // Create the client using the settings.
-            PlacesClient placesClient = PlacesClient.create(placesSettings);
 
+        try(PlacesClient placesClient = createPlacesClient("places.")) {
             SearchTextRequest.Builder requestBuilder = SearchTextRequest.newBuilder()
+//                    .setIncludedType("restaurant") TODO: doing this puts a hard restriction on the search space.
                     .setTextQuery(searchRestaurantRequest.getSearchQuery())
                     .setMaxResultCount(5);
 
-            // Create the location bias using a circle
             SearchTextRequest.LocationBias locationBias = createLocationBias(searchRestaurantRequest);
             if (locationBias != null) {
                 requestBuilder.setLocationBias(locationBias);
@@ -72,27 +57,58 @@ public class MapsService {
                requestBuilder.setRankPreference(SearchTextRequest.RankPreference.RELEVANCE);
             }
 
-            // Build the Text Search request
+            log.debug("Building search text request for: {}", searchRestaurantRequest);
             SearchTextRequest request = requestBuilder.build();
-            // Call Text Search and output the response to the console
             SearchTextResponse response = placesClient.searchText(request);
             List<RestaurantDTO> restaurantDTOList = response.getPlacesList().stream()
                     .map(restaurantDTOMapper::toRestaurantDTO)
                     .toList();
 
             placesClient.close();
+            log.info("{} restaurants fetched successfully.", restaurantDTOList.size());
             return restaurantDTOList;
         } catch (Exception e) {
-            System.err.println("An error occurred: " + e.getMessage());
             log.error("An error occurred: {}", e.getMessage());
         }
         return null;
+    }
+
+    public RestaurantDTO fetchRestaurant(String placeId) {
+        log.info("Fetch restaurant by Id: {}", placeId);
+        String placeName = "places/" + placeId;
+        try(PlacesClient placesClient = createPlacesClient("")) {
+            GetPlaceRequest request = GetPlaceRequest.newBuilder()
+                    .setName(placeName)
+                    .build();
+            Place place = placesClient.getPlace(request);
+            placesClient.close();
+            return restaurantDTOMapper.toRestaurantDTO(place);
+        } catch (Exception e) {
+            log.error("An error occurred: {}", e.getMessage(), e);
+        }
+        return null;
+    }
+
+    private PlacesClient createPlacesClient(String fieldMaskSuffix) throws IOException {
+        Map<String, String> headers = new HashMap<>();
+        String fieldMaskString = buildFieldMaskString(fieldMaskSuffix);
+        headers.put("x-goog-fieldmask", fieldMaskString);
+        headers.put("x-goog-api-key", googleApiConfig.getKey());
+        HeaderProvider headerProvider = FixedHeaderProvider.create(headers);
+
+        PlacesSettings placesSettings = PlacesSettings.newBuilder()
+                .setHeaderProvider(headerProvider)
+                .setCredentialsProvider(NoCredentialsProvider.create())
+                .build();
+        return PlacesClient.create(placesSettings);
     }
 
     private SearchTextRequest.LocationBias createLocationBias(SearchRestaurantRequest searchRestaurantRequest) {
         if (searchRestaurantRequest.getLatitude() == null || searchRestaurantRequest.getLongitude() == null) {
             return null;
         }
+
+        log.debug("Creating location bias for lat {} long {} provided", searchRestaurantRequest.getLatitude(), searchRestaurantRequest.getLongitude());
         LatLng centerPoint = LatLng.newBuilder()
                 .setLatitude(searchRestaurantRequest.getLatitude())
                 .setLongitude(searchRestaurantRequest.getLongitude())
@@ -101,9 +117,22 @@ public class MapsService {
                 .setCenter(centerPoint)
                 .setRadius(searchRestaurantRequest.getRadiusMeters())
                 .build();
-        // Create the location bias using a circle
         return SearchTextRequest.LocationBias.newBuilder()
                 .setCircle(circleArea)
                 .build();
+    }
+
+    private String buildFieldMaskString(String suffix) {
+        String[] fields = {
+                "id", "displayName", "types", "primaryType", "primaryTypeDisplayName", "nationalPhoneNumber",
+                "internationalPhoneNumber", "formattedAddress", "shortFormattedAddress", "googleMapsUri", "websiteUri",
+                "rating", "reviews", "userRatingCount", "businessStatus", "priceLevel", "regularOpeningHours", "takeout",
+                "delivery", "dineIn", "curbsidePickup", "reservable", "servesLunch", "servesDinner", "servesBrunch",
+                "servesVegetarianFood", "liveMusic", "servesDessert", "servesCoffee", "goodForChildren", "restroom",
+                "goodForGroups", "goodForWatchingSports", "paymentOptions"
+        };
+        return Arrays.stream(fields)
+                .map(field -> suffix + field)
+                .collect(Collectors.joining(","));
     }
 }

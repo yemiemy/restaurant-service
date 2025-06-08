@@ -46,7 +46,6 @@ public class RestaurantDTOMapper {
                 .businessStatus(place.getBusinessStatus().name())
                 .priceLevel(place.getPriceLevel().name())
                 .openingHours(openingHourDTO)
-                .adrFormatAddress(place.getAdrFormatAddress())
                 .takeout(place.getTakeout())
                 .delivery(place.getDelivery())
                 .dineIn(place.getDineIn())

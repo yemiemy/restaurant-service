@@ -11,5 +11,4 @@ import java.util.List;
 public class OpeningHourDTO {
     private boolean openNow;
     private List<String> weekdayDescriptions;
-    private Instant nextOpenTime;
 }

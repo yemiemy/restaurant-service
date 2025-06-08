@@ -24,7 +24,6 @@ class OpeningHourDTOMapperTest {
         times.add("Mon 12:00 - 06:00");
         when(openingHours.getWeekdayDescriptionsList()).thenReturn(times);
         Timestamp timestamp = Timestamp.newBuilder().setSeconds(12).build();
-        when(openingHours.getNextOpenTime()).thenReturn(timestamp);
 
         // act
         OpeningHourDTO openingHourDTO = mapper.toOpeningHourDTO(openingHours);
@@ -33,7 +32,6 @@ class OpeningHourDTOMapperTest {
         assertThat(openingHourDTO).isNotNull();
         assertThat(openingHourDTO.isOpenNow()).isFalse();
         assertThat(openingHourDTO.getWeekdayDescriptions()).containsExactly("Mon 12:00 - 06:00");
-        assertThat(openingHourDTO.getNextOpenTime()).isEqualTo("1970-01-01T00:00:12Z");
     }
 
     @Test

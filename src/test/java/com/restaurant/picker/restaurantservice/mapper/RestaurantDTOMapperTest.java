@@ -56,7 +56,6 @@ class RestaurantDTOMapperTest {
                 .setBusinessStatus(Place.BusinessStatus.OPERATIONAL)
                 .setPriceLevel(PriceLevel.PRICE_LEVEL_MODERATE)
                 .setRegularOpeningHours(Place.OpeningHours.newBuilder().build())
-                .setAdrFormatAddress("<span class='street-address'>123 Main St</span>")
                 .setTakeout(true)
                 .setDelivery(true)
                 .setDineIn(true)

@@ -3,11 +3,10 @@ package com.restaurant.picker.restaurantservice.rest;
 import com.restaurant.picker.restaurantservice.dto.RestaurantDTO;
 import com.restaurant.picker.restaurantservice.model.SearchRestaurantRequest;
 import com.restaurant.picker.restaurantservice.service.MapsService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +14,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Validated
+@RequestMapping("/api")
 public class RestaurantServiceController {
 
     private final MapsService mapsService;
@@ -24,16 +24,13 @@ public class RestaurantServiceController {
         return "Hello World!";
     }
 
-    @GetMapping(path = "/restaurants")
-    public ResponseEntity<List<RestaurantDTO>> getRestaurants(@ModelAttribute SearchRestaurantRequest searchRestaurantRequest) {
-        return ResponseEntity.ok(mapsService.textSearch(searchRestaurantRequest));
+    @PostMapping(path = "/restaurants")
+    public ResponseEntity<List<RestaurantDTO>> searchRestaurants(@Valid @RequestBody SearchRestaurantRequest searchRestaurantRequest) {
+        return ResponseEntity.ok(mapsService.searchRestaurants(searchRestaurantRequest));
     }
 
-    // Custom handler for missing required request parameters
-    @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<String> handleMissingParams(MissingServletRequestParameterException ex) {
-        String name = ex.getParameterName();
-        String message = "Required query parameter '" + name + "' is missing";
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
+    @GetMapping(path = "/restaurants/{id}")
+    public ResponseEntity<RestaurantDTO> fetchRestaurant(@Valid @PathVariable String id) {
+        return ResponseEntity.ok(mapsService.fetchRestaurant(id));
     }
 }
