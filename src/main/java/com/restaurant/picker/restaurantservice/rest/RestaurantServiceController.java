@@ -19,11 +19,6 @@ public class RestaurantServiceController {
 
     private final MapsService mapsService;
 
-    @GetMapping
-    public String helloWorld() {
-        return "Hello World!";
-    }
-
     @PostMapping(path = "/restaurants")
     public ResponseEntity<List<RestaurantDTO>> searchRestaurants(@Valid @RequestBody SearchRestaurantRequest searchRestaurantRequest) {
         return ResponseEntity.ok(mapsService.searchRestaurants(searchRestaurantRequest));
@@ -31,6 +26,10 @@ public class RestaurantServiceController {
 
     @GetMapping(path = "/restaurants/{id}")
     public ResponseEntity<RestaurantDTO> fetchRestaurant(@Valid @PathVariable String id) {
+        RestaurantDTO restaurant = mapsService.fetchRestaurant(id);
+        if  (restaurant == null) {
+            return ResponseEntity.badRequest().body(null);
+        }
         return ResponseEntity.ok(mapsService.fetchRestaurant(id));
     }
 }

@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: restaurant-service
+
+google:
+  api:
+    key: test_api_key

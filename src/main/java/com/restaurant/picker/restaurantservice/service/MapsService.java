@@ -1,27 +1,22 @@
 package com.restaurant.picker.restaurantservice.service;
 
-import com.google.api.gax.rpc.FixedHeaderProvider;
-import com.google.api.gax.rpc.HeaderProvider;
 import com.google.maps.places.v1.*;
 import com.google.type.LatLng;
-import com.restaurant.picker.restaurantservice.config.GoogleApiConfig;
 import com.restaurant.picker.restaurantservice.dto.RestaurantDTO;
+import com.restaurant.picker.restaurantservice.factory.PlacesClientFactory;
 import com.restaurant.picker.restaurantservice.mapper.RestaurantDTOMapper;
 import com.restaurant.picker.restaurantservice.model.SearchRestaurantRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import com.google.api.gax.core.NoCredentialsProvider;
 
-import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class MapsService {
-    private final GoogleApiConfig googleApiConfig;
+    private final PlacesClientFactory placesClientFactory;
 
     private final RestaurantDTOMapper restaurantDTOMapper;
 
@@ -32,7 +27,7 @@ public class MapsService {
                 .toList()
                 : Collections.emptyList();
 
-        try(PlacesClient placesClient = createPlacesClient("places.")) {
+        try(PlacesClient placesClient = placesClientFactory.createClient("places.")) {
             SearchTextRequest.Builder requestBuilder = SearchTextRequest.newBuilder()
 //                    .setIncludedType("restaurant") TODO: doing this puts a hard restriction on the search space.
                     .setTextQuery(searchRestaurantRequest.getSearchQuery())
@@ -70,13 +65,13 @@ public class MapsService {
         } catch (Exception e) {
             log.error("An error occurred: {}", e.getMessage());
         }
-        return null;
+        return new ArrayList<>();
     }
 
     public RestaurantDTO fetchRestaurant(String placeId) {
         log.info("Fetch restaurant by Id: {}", placeId);
         String placeName = "places/" + placeId;
-        try(PlacesClient placesClient = createPlacesClient("")) {
+        try(PlacesClient placesClient = placesClientFactory.createClient("")) {
             GetPlaceRequest request = GetPlaceRequest.newBuilder()
                     .setName(placeName)
                     .build();
@@ -87,20 +82,6 @@ public class MapsService {
             log.error("An error occurred: {}", e.getMessage(), e);
         }
         return null;
-    }
-
-    private PlacesClient createPlacesClient(String fieldMaskSuffix) throws IOException {
-        Map<String, String> headers = new HashMap<>();
-        String fieldMaskString = buildFieldMaskString(fieldMaskSuffix);
-        headers.put("x-goog-fieldmask", fieldMaskString);
-        headers.put("x-goog-api-key", googleApiConfig.getKey());
-        HeaderProvider headerProvider = FixedHeaderProvider.create(headers);
-
-        PlacesSettings placesSettings = PlacesSettings.newBuilder()
-                .setHeaderProvider(headerProvider)
-                .setCredentialsProvider(NoCredentialsProvider.create())
-                .build();
-        return PlacesClient.create(placesSettings);
     }
 
     private SearchTextRequest.LocationBias createLocationBias(SearchRestaurantRequest searchRestaurantRequest) {
@@ -120,19 +101,5 @@ public class MapsService {
         return SearchTextRequest.LocationBias.newBuilder()
                 .setCircle(circleArea)
                 .build();
-    }
-
-    private String buildFieldMaskString(String suffix) {
-        String[] fields = {
-                "id", "displayName", "types", "primaryType", "primaryTypeDisplayName", "nationalPhoneNumber",
-                "internationalPhoneNumber", "formattedAddress", "shortFormattedAddress", "googleMapsUri", "websiteUri",
-                "rating", "reviews", "userRatingCount", "businessStatus", "priceLevel", "regularOpeningHours", "takeout",
-                "delivery", "dineIn", "curbsidePickup", "reservable", "servesLunch", "servesDinner", "servesBrunch",
-                "servesVegetarianFood", "liveMusic", "servesDessert", "servesCoffee", "goodForChildren", "restroom",
-                "goodForGroups", "goodForWatchingSports", "paymentOptions"
-        };
-        return Arrays.stream(fields)
-                .map(field -> suffix + field)
-                .collect(Collectors.joining(","));
     }
 }
