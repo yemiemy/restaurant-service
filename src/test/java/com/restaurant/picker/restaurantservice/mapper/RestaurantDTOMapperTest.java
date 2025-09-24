@@ -10,6 +10,7 @@ import com.restaurant.picker.restaurantservice.dto.RestaurantDTO;
 import com.restaurant.picker.restaurantservice.dto.ReviewDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -28,12 +29,8 @@ class RestaurantDTOMapperTest {
     @MockitoBean
     private OpeningHourDTOMapper openingHourDTOMapper;
 
+    @Autowired
     private RestaurantDTOMapper restaurantDTOMapper;
-
-    @BeforeEach
-    void setUp() {
-        restaurantDTOMapper = new RestaurantDTOMapper(reviewDTOMapper, paymentOptionsDTOMapper, openingHourDTOMapper);
-    }
 
     @Test
     public void testToRestaurantDTO() {

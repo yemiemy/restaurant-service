@@ -1,12 +1,13 @@
 package com.restaurant.picker.restaurantservice.mapper;
 
+import com.google.maps.places.v1.AuthorAttribution;
 import com.google.maps.places.v1.Review;
 import com.google.protobuf.Timestamp;
 import com.google.type.LocalizedText;
 import com.restaurant.picker.restaurantservice.dto.AuthorDTO;
 import com.restaurant.picker.restaurantservice.dto.ReviewDTO;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -18,15 +19,11 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 class ReviewDTOMapperTest {
 
+    @Autowired
     private ReviewDTOMapper mapper;
 
     @MockitoBean
     AuthorDTOMapper authorDTOMapper;
-
-    @BeforeEach
-    void setUp() {
-        mapper = new ReviewDTOMapper(authorDTOMapper);
-    }
 
     @Test
     public void testMapToReviewDTOCorrectly() {
@@ -35,8 +32,12 @@ class ReviewDTOMapperTest {
         when(review.getName()).thenReturn("places/Chfkhk3yfk");
         when(review.getRelativePublishTimeDescription()).thenReturn("2 months ago");
         when(review.getRating()).thenReturn(5.0);
+        when(review.hasText()).thenReturn(true);
         when(review.getText()).thenReturn(LocalizedText.newBuilder().setText("some review text").build());
-        when(review.getAuthorAttribution()).thenReturn(null);
+        AuthorAttribution authorAttribution = mock(AuthorAttribution.class);
+        when(review.hasAuthorAttribution()).thenReturn(true);
+        when(review.getAuthorAttribution()).thenReturn(authorAttribution);
+        when(authorAttribution.getDisplayName()).thenReturn("John Doe");
         when(authorDTOMapper.toAuthorDTO(any())).thenReturn(AuthorDTO.builder().displayName("John Doe").build());
         Timestamp publishTime = Timestamp.newBuilder().setSeconds(10).build();
         when(review.getPublishTime()).thenReturn(publishTime);

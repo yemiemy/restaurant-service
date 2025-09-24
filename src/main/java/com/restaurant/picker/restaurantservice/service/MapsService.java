@@ -29,7 +29,7 @@ public class MapsService {
 
         try(PlacesClient placesClient = placesClientFactory.createClient("places.")) {
             SearchTextRequest.Builder requestBuilder = SearchTextRequest.newBuilder()
-//                    .setIncludedType("restaurant") TODO: doing this puts a hard restriction on the search space.
+                    .setIncludedType("restaurant") // TODO: doing this puts a hard restriction on the search space.
                     .setTextQuery(searchRestaurantRequest.getSearchQuery())
                     .setMaxResultCount(5);
 

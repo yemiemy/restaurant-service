@@ -3,14 +3,17 @@ package com.restaurant.picker.restaurantservice.mapper;
 import com.google.maps.places.v1.AuthorAttribution;
 import com.restaurant.picker.restaurantservice.dto.AuthorDTO;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest
 class AuthorDTOMapperTest {
-
-    private final AuthorDTOMapper authorDTOMapper = new AuthorDTOMapper();
+    @Autowired
+    private AuthorDTOMapper authorDTOMapper;
 
     @Test
     public void testMapAuthorDTOCorrectly() {
