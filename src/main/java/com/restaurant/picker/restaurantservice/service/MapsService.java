@@ -23,7 +23,7 @@ public class MapsService {
     public List<RestaurantDTO> searchRestaurants(SearchRestaurantRequest searchRestaurantRequest) {
         log.info("Search restaurant request: {}", searchRestaurantRequest);
         List<PriceLevel> desiredPriceLevels = searchRestaurantRequest.getDesiredPriceLevels() != null ? searchRestaurantRequest.getDesiredPriceLevels().stream()
-                .map(PriceLevel::valueOf)
+                .map(pl -> PriceLevel.valueOf(pl.name()))
                 .toList()
                 : Collections.emptyList();
 
@@ -47,7 +47,7 @@ public class MapsService {
                 requestBuilder.setOpenNow(searchRestaurantRequest.getRequireOpenNow());
             }
             if (searchRestaurantRequest.getRankPreference() != null) {
-                requestBuilder.setRankPreference(SearchTextRequest.RankPreference.valueOf(searchRestaurantRequest.getRankPreference()));
+                requestBuilder.setRankPreference(SearchTextRequest.RankPreference.valueOf(searchRestaurantRequest.getRankPreference().name()));
             } else {
                requestBuilder.setRankPreference(SearchTextRequest.RankPreference.RELEVANCE);
             }
@@ -64,8 +64,8 @@ public class MapsService {
             return restaurantDTOList;
         } catch (Exception e) {
             log.error("An error occurred: {}", e.getMessage());
+            throw new RuntimeException("An error occurred: " + e.getMessage());
         }
-        return new ArrayList<>();
     }
 
     public RestaurantDTO fetchRestaurant(String placeId) {

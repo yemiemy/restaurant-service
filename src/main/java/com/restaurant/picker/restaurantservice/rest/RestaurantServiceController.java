@@ -19,8 +19,8 @@ public class RestaurantServiceController {
 
     private final MapsService mapsService;
 
-    @PostMapping(path = "/restaurants")
-    public ResponseEntity<List<RestaurantDTO>> searchRestaurants(@Valid @RequestBody SearchRestaurantRequest searchRestaurantRequest) {
+    @GetMapping(path = "/restaurants")
+    public ResponseEntity<List<RestaurantDTO>> searchRestaurants(@Valid @ModelAttribute SearchRestaurantRequest searchRestaurantRequest) {
         return ResponseEntity.ok(mapsService.searchRestaurants(searchRestaurantRequest));
     }
 

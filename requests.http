@@ -1,8 +1,8 @@
 ### GET request with all params set
-GET http://localhost:8080/api/restaurants?searchQuery=pizza&latitude=51.5074&longitude=-0.1278&radiusMeters=200&minPlaceRating=4&desiredPriceLevels=PRICE_LEVEL_INEXPENSIVE&desiredPriceLevels=PRICE_LEVEL_MODERATE&requireOpenNow=true&rankPreference=RELEVANCE
+GET http://localhost:8082/api/restaurants?searchQuery=pizza&latitude=51.5074&longitude=-0.1278&radiusMeters=200&minPlaceRating=4&desiredPriceLevels=PRICE_LEVEL_INEXPENSIVE&desiredPriceLevels=PRICE_LEVEL_MODERATE&requireOpenNow=true&rankPreference=RELEVANCE
 
-### POST request to search restaurants
-POST http://localhost:8080/api/restaurants
+### POST request to search restaurants - no longer valid
+POST http://localhost:8082/api/restaurants
 Content-Type: application/json
 
 {
